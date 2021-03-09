@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_3/page/feed_page.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key}) : super(key: key);
@@ -27,7 +28,7 @@ class _HomePageState extends State<HomePage> {
         pageChanged(index);
       },
       children: <Widget>[
-        Red(),
+        FeedPage(),
         Blue(),
         Yellow(),
       ],
@@ -41,7 +42,7 @@ class _HomePageState extends State<HomePage> {
 
   List<BottomNavigationBarItem> buildBottomNavBarItems() {
     return [
-      BottomNavigationBarItem(icon: new Icon(Icons.home), label: 'Red'),
+      BottomNavigationBarItem(icon: new Icon(Icons.home), label: 'Home'),
       BottomNavigationBarItem(
         icon: new Icon(Icons.shopping_bag),
         label: 'Cart',
@@ -62,7 +63,17 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Judul"),
+        title: Text("Warmo"),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search, color: Colors.white),
+            onPressed: null,
+          ),
+          IconButton(
+            icon: Icon(Icons.shopping_cart, color: Colors.white),
+            onPressed: null,
+          ),
+        ],
       ),
       body: buildPageView(),
       bottomNavigationBar: BottomNavigationBar(
