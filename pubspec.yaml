@@ -31,6 +31,7 @@ dependencies:
   http: ^0.12.2
   provider: 4.3.2+4
 
+# List of development dependencies
 dev_dependencies:
   flutter_test:
     sdk: flutter
