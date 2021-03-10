@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'edit_account/address_form.dart';
 import 'edit_account/edit_account_page.dart';
 
 class AccountPage extends StatefulWidget {
@@ -65,7 +66,12 @@ class PersonalSection extends StatelessWidget {
             label: 'Name',
             content: titleCase('$fName $lName'),
             onEditTap: () {
-              print('debug[tap] edit');
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => AddressForm(
+                            type: FormType.EDIT_NAME,
+                          )));
             },
           ),
           ListTileEdit(
@@ -75,14 +81,24 @@ class PersonalSection extends StatelessWidget {
             label: 'Email',
             content: 'araya@mailinator.com',
             onEditTap: () {
-              print('debug[tap] edit');
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => AddressForm(
+                            type: FormType.EDIT_EMAIL,
+                          )));
             },
           ),
           ListTileEdit(
             label: 'Phone',
             content: phoneFormater('083713791379'),
             onEditTap: () {
-              print('debug[tap] edit');
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => AddressForm(
+                            type: FormType.EDIT_PHONE,
+                          )));
             },
           ),
         ],
