@@ -140,67 +140,73 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 ),
               ),
             ),
-            Expanded(
-              child: Align(
-                alignment: FractionalOffset.bottomCenter,
-                child: Container(
-                    color: Colors.white,
-                    height: MediaQuery.of(context).size.height * 0.14,
-                    width: MediaQuery.of(context).size.width,
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.fromLTRB(13, 10, 13, 5),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Column(children: [
+              Expanded(
+                child: Align(
+                  alignment: FractionalOffset.bottomCenter,
+                  child: Container(
+                      color: Colors.white,
+                      height: MediaQuery.of(context).size.height * 0.15,
+                      width: MediaQuery.of(context).size.width,
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.fromLTRB(13, 10, 13, 5),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Total",
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                                Text(
+                                  "1000",
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500),
+                                )
+                              ],
+                            ),
+                          ),
+                          Row(
                             children: [
-                              Text(
-                                "Total",
-                                style: TextStyle(
-                                    fontSize: 15, fontWeight: FontWeight.w500),
-                              ),
-                              Text(
-                                "1000",
-                                style: TextStyle(
-                                    fontSize: 15, fontWeight: FontWeight.w500),
-                              )
+                              Container(
+                                  padding: const EdgeInsets.all(8),
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.5,
+                                  child: RaisedButton(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0)),
+                                    onPressed: () {},
+                                    color: Colors.red,
+                                    textColor: Colors.white,
+                                    child: Text("Back To Cart".toUpperCase(),
+                                        style: TextStyle(fontSize: 14)),
+                                  )),
+                              Container(
+                                  padding: const EdgeInsets.all(8),
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.5,
+                                  child: RaisedButton(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0)),
+                                    onPressed: () {},
+                                    color: Colors.blueAccent,
+                                    textColor: Colors.white,
+                                    child: Text("Checkout".toUpperCase(),
+                                        style: TextStyle(fontSize: 14)),
+                                  ))
                             ],
                           ),
-                        ),
-                        Row(
-                          children: [
-                            Container(
-                                padding: const EdgeInsets.all(8),
-                                width: MediaQuery.of(context).size.width * 0.5,
-                                child: RaisedButton(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(10.0)),
-                                  onPressed: () {},
-                                  color: Colors.red,
-                                  textColor: Colors.white,
-                                  child: Text("Back To Cart".toUpperCase(),
-                                      style: TextStyle(fontSize: 14)),
-                                )),
-                            Container(
-                                padding: const EdgeInsets.all(8),
-                                width: MediaQuery.of(context).size.width * 0.5,
-                                child: RaisedButton(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(10.0)),
-                                  onPressed: () {},
-                                  color: Colors.blueAccent,
-                                  textColor: Colors.white,
-                                  child: Text("Checkout".toUpperCase(),
-                                      style: TextStyle(fontSize: 14)),
-                                ))
-                          ],
-                        ),
-                      ],
-                    )),
+                        ],
+                      )),
+                ),
               ),
-            ),
+            ])
           ],
         ));
   }
