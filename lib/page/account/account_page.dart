@@ -1,5 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_3/model/customer_model.dart';
+import 'package:flutter_application_3/provider/account_provider.dart';
+import 'package:provider/provider.dart';
 
 import 'edit_account/address_form.dart';
 import 'edit_account/edit_account_page.dart';
@@ -13,43 +16,78 @@ class _AccountPageState extends State<AccountPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
+  void initState() {
+    context
+        .read<AccountProvider>()
+        .loadAccountData('f6f37533-a074-4afc-a022-95f888aee4f1');
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
       body: SafeAreaView(
-        child: Column(
+        child: Stack(
           children: [
-            PersonalSection(),
-            ListTile(
-              title: 'Daftar Alamat',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => EditAccountPage(
-                            type: EditingType.ADDRESS,
-                          )),
-                );
-              },
-            ),
+            context.watch<AccountProvider>().accountData == null
+                ? Positioned(
+                    top: 0,
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      color: Colors.transparent,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                  )
+                : _buildContentBody(context),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildContentBody(BuildContext context) {
+    CustomerModel data = context.watch<AccountProvider>().accountData;
+    return Column(
+      children: [
+        PersonalSection(data: data),
+        ListTile(
+          title: 'Daftar Alamat',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => EditAccountPage(
+                        type: EditingType.ADDRESS,
+                      )),
+            );
+          },
+        ),
+      ],
+    );
+  }
 }
 
 class PersonalSection extends StatelessWidget {
-  final fName = 'el';
-  final lName = 'araya';
+  final CustomerModel data;
 
-  String _acronym() {
+  const PersonalSection({Key key, this.data}) : super(key: key);
+
+  String _acronym(String fName, String lName) {
     var result = fName.substring(0, 1) + lName.substring(0, 1);
     return result.toUpperCase();
   }
 
   @override
   Widget build(BuildContext context) {
+    String fName = data?.firstName ?? '';
+    String lName = data?.lastName ?? '';
+    String customerId = data?.id;
+
+    List<Addresses> addresses = data?.addresses ?? [];
+
     return Container(
       width: MediaQuery.of(context).size.width,
       child: Column(
@@ -59,7 +97,7 @@ class PersonalSection extends StatelessWidget {
             child: CircleAvatar(
               radius: 24,
               backgroundColor: Colors.brown.shade800,
-              child: Text(_acronym()),
+              child: Text(_acronym(fName, lName)),
             ),
           ),
           ListTileEdit(
@@ -71,6 +109,7 @@ class PersonalSection extends StatelessWidget {
                   MaterialPageRoute(
                       builder: (context) => AddressForm(
                             type: FormType.EDIT_NAME,
+                            id: customerId,
                           )));
             },
           ),
@@ -91,15 +130,15 @@ class PersonalSection extends StatelessWidget {
           ),
           ListTileEdit(
             label: 'Phone',
-            content: phoneFormater('083713791379'),
-            onEditTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => AddressForm(
-                            type: FormType.EDIT_PHONE,
-                          )));
-            },
+            content: phoneFormater(addresses?.first?.phone),
+            // onEditTap: () {
+            //   Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //           builder: (context) => AddressForm(
+            //                 type: FormType.EDIT_PHONE,
+            //               )));
+            // },
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_3/page/account/account_page.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key}) : super(key: key);
@@ -29,7 +30,7 @@ class _HomePageState extends State<HomePage> {
       children: <Widget>[
         Red(),
         Blue(),
-        Yellow(),
+        AccountPage(),
       ],
     );
   }
@@ -60,9 +61,19 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    var title = 'Judul';
+    switch (bottomSelectedIndex) {
+      case 2:
+        title = 'Account';
+        break;
+      default:
+        title = 'Judul';
+        break;
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text("Judul"),
+        title: Text(title),
       ),
       body: buildPageView(),
       bottomNavigationBar: BottomNavigationBar(

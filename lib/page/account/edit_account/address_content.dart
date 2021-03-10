@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_3/page/edit_account/address_form.dart';
 
 import '../account_page.dart';
+import 'address_form.dart';
 
 class AddressContent extends StatefulWidget {
   @override

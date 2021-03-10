@@ -1,19 +1,33 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_3/page/account_page.dart';
+import 'package:flutter_application_3/provider/account_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_application_3/model/customer_model.dart';
+import 'package:flutter_application_3/page/account/account_page.dart';
 
 enum FormType { ADD_ADDRESS, EDIT_ADDRESS, EDIT_NAME, EDIT_EMAIL, EDIT_PHONE }
 
 class AddressForm extends StatefulWidget {
   final FormType type;
+  final String id;
 
-  const AddressForm({Key key, this.type}) : super(key: key);
+  const AddressForm({Key key, this.type, this.id}) : super(key: key);
   @override
   _AddressFormState createState() => _AddressFormState();
 }
 
 class _AddressFormState extends State<AddressForm> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+  /// Edit Name Controller
+  final fNameCtrl = TextEditingController();
+  final lNameCtrl = TextEditingController();
+
+  /// Edit Email Controller
+  final emailCtrl = TextEditingController();
+
+  /// Edit Phone Controller
+  final phoneCtrl = TextEditingController();
 
   String _appBarTitle() {
     String txt = '';
@@ -54,12 +68,16 @@ class _AddressFormState extends State<AddressForm> {
   }
 
   Widget _buildBody(BuildContext context, FormType type) {
+    CustomerModel data = context.select((AccountProvider p) => p.accountData);
     Widget w;
     if (type == FormType.ADD_ADDRESS || type == FormType.EDIT_ADDRESS) {
       w = _buildAddressForm(context);
     } else if (type == FormType.EDIT_NAME) {
+      fNameCtrl.text = data?.firstName ?? '';
+      lNameCtrl.text = data?.lastName ?? '';
       w = _buildNameForm(context);
     } else if (type == FormType.EDIT_EMAIL) {
+      emailCtrl.text = data?.email ?? '';
       w = _buildEmailForm(context);
     } else if (type == FormType.EDIT_PHONE) {
       w = _buildPhoneForm(context);
@@ -158,43 +176,48 @@ class _AddressFormState extends State<AddressForm> {
     });
   }
 
-  Widget _buildNameForm(BuildContext context) => Column(
-        children: [
-          TextFormField(
-            textInputAction: TextInputAction.next,
-            decoration: InputDecoration(
-                contentPadding: const EdgeInsets.only(bottom: 0),
-                labelText: 'First Name',
-                alignLabelWithHint: true),
+  Widget _buildNameForm(BuildContext context) {
+    return Column(
+      children: [
+        TextFormField(
+          controller: fNameCtrl,
+          textInputAction: TextInputAction.next,
+          decoration: InputDecoration(
+              contentPadding: const EdgeInsets.only(bottom: 0),
+              labelText: 'First Name',
+              alignLabelWithHint: true),
+        ),
+        TextFormField(
+          controller: lNameCtrl,
+          textInputAction: TextInputAction.done,
+          decoration: InputDecoration(
+              contentPadding: const EdgeInsets.only(bottom: 0),
+              labelText: 'Last Name',
+              alignLabelWithHint: true),
+        ),
+        Container(
+          margin: const EdgeInsets.only(top: 14),
+          height: 40,
+          width: MediaQuery.of(context).size.width,
+          child: RaisedButton(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+                side: BorderSide(color: Colors.green)),
+            onPressed: () => _submitFormHandler(context),
+            color: Colors.green,
+            textColor: Colors.white,
+            // padding: const EdgeInsets.only(left: 8, right: 8),
+            child: Text('Save'),
           ),
-          TextFormField(
-            textInputAction: TextInputAction.done,
-            decoration: InputDecoration(
-                contentPadding: const EdgeInsets.only(bottom: 0),
-                labelText: 'Last Name',
-                alignLabelWithHint: true),
-          ),
-          Container(
-            margin: const EdgeInsets.only(top: 14),
-            height: 40,
-            width: MediaQuery.of(context).size.width,
-            child: RaisedButton(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  side: BorderSide(color: Colors.green)),
-              onPressed: () => _submitFormHandler(context),
-              color: Colors.green,
-              textColor: Colors.white,
-              // padding: const EdgeInsets.only(left: 8, right: 8),
-              child: Text('Save'),
-            ),
-          ),
-        ],
-      );
+        ),
+      ],
+    );
+  }
 
   Widget _buildEmailForm(BuildContext context) => Column(
         children: [
           TextFormField(
+            controller: emailCtrl,
             textInputAction: TextInputAction.done,
             decoration: InputDecoration(
                 contentPadding: const EdgeInsets.only(bottom: 0),
