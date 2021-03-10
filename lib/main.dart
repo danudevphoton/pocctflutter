@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/page/home_page.dart';
+import 'package:flutter_application_3/page/login_page.dart';
+import 'package:flutter_application_3/provider/login_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'provider/provider_tes.dart';
@@ -7,6 +9,7 @@ import 'provider/provider_tes.dart';
 void main() {
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider<TesProvider>(create: (_) => TesProvider()),
+    ChangeNotifierProvider<LoginProvider>(create: (_) => LoginProvider()),
   ], child: MyApp()));
 }
 
@@ -33,6 +36,8 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: HomePage(),
+      debugShowCheckedModeBanner: false,
+      // home: LoginPage(),
     );
   }
 }
