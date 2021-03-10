@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_3/page/checkout_page.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key}) : super(key: key);
@@ -28,7 +29,7 @@ class _HomePageState extends State<HomePage> {
       },
       children: <Widget>[
         Red(),
-        Blue(),
+        CheckoutPage(),
         Yellow(),
       ],
     );
@@ -61,9 +62,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Judul"),
-      ),
       body: buildPageView(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: bottomSelectedIndex,
