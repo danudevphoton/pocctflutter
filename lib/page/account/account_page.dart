@@ -1,11 +1,18 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_3/model/customer_model.dart';
-import 'package:flutter_application_3/provider/account_provider.dart';
 import 'package:provider/provider.dart';
 
-import 'edit_account/address_form.dart';
-import 'edit_account/edit_account_page.dart';
+import '../../model/customer_model.dart';
+import '../../provider/account_provider.dart';
+import 'account_payload.dart';
+import 'account_utils.dart';
+import 'address/addresses_list.dart';
+import 'widgets/edit_account_form.dart';
+import 'widgets/list_tile_edit.dart';
+import 'widgets/positioned_spinner.dart';
+import 'widgets/safe_area_view.dart';
 
 class AccountPage extends StatefulWidget {
   @override
@@ -14,286 +21,264 @@ class AccountPage extends StatefulWidget {
 
 class _AccountPageState extends State<AccountPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  final _emailVerifyCtrl = TextEditingController();
+
+  CustomerModel accountData;
 
   @override
   void initState() {
+    print('accountPage>>initstate');
     context
         .read<AccountProvider>()
         .loadAccountData('f6f37533-a074-4afc-a022-95f888aee4f1');
+    WidgetsBinding.instance.addPostFrameCallback((_) {});
     super.initState();
   }
 
   @override
+  void dispose() {
+    _emailVerifyCtrl?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    accountData = context.watch<AccountProvider>().accountData;
+
+    if (context.watch<AccountProvider>().errorLoadAccountData) {
+      _scaffoldKey.currentState
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(
+            content:
+                Text('Cannot Load Account Data', textAlign: TextAlign.center)));
+    }
+
     return Scaffold(
       key: _scaffoldKey,
       body: SafeAreaView(
         child: Stack(
           children: [
-            context.watch<AccountProvider>().accountData == null
-                ? Positioned(
-                    top: 0,
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: Container(
-                      color: Colors.transparent,
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
-                  )
-                : _buildContentBody(context),
+            accountData != null
+                ? SingleChildScrollView(
+                    child: _buildContentBody(context, accountData))
+                : SizedBox(),
+            PositionedSpinner(
+                status: context.watch<AccountProvider>().loadingStatus,
+                scaffoldKey: _scaffoldKey),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildContentBody(BuildContext context) {
-    CustomerModel data = context.watch<AccountProvider>().accountData;
+  String _acronym(String fName, String lName) {
+    var f = fName != null ? fName.substring(0, 1) : '?';
+    var l = lName != null ? lName.substring(0, 1) : '?';
+    var result = '$f$l';
+    return result.toUpperCase();
+  }
+
+  Widget _buildContentBody(BuildContext context, CustomerModel data) {
+    String customerId = data?.id;
+    String fName = data?.firstName ?? '';
+    String lName = data?.lastName ?? '';
+    String fullName = '$fName $lName';
+    String dateBirth = data?.dateOfBirth ?? '';
+    String email = data?.email ?? '';
+
+    List<Addresses> addresses = data?.addresses;
+    var address = addresses.firstWhere(
+        (e) => e?.id == data?.defaultBillingAddressId,
+        orElse: () => null);
+    String phone = address?.phone;
+
     return Column(
       children: [
-        PersonalSection(data: data),
+        Container(
+          width: MediaQuery.of(context).size.width,
+          child: Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.all(14),
+                child: CircleAvatar(
+                  radius: 40,
+                  backgroundColor: Colors.blueGrey,
+                  child: Text(_acronym(fName, lName),
+                      style: TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      )),
+                ),
+              ),
+              ListTileEdit(
+                label: 'Name',
+                content: AccountUtils.titleCase(fullName),
+                onEditTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => AccountForm(
+                                type: FormType.EDIT_NAME,
+                                id: customerId,
+                              )));
+                },
+              ),
+              ListTileEdit(
+                  label: 'Date of Birth',
+                  content: AccountUtils.dateBirthFormatter(dateBirth)),
+              ListTileEdit(
+                label: 'Email',
+                content: email,
+                isEmailVerified: accountData?.isEmailVerified,
+                onVerifyTap: () {
+                  _verifyingEmailHandler();
+                },
+                onEditTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            AccountForm(type: FormType.EDIT_EMAIL)),
+                  );
+                },
+              ),
+              phone != null
+                  ? ListTileEdit(
+                      label: 'Phone',
+                      content: AccountUtils.phoneFormater(phone),
+                      onEditTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  AccountForm(type: FormType.EDIT_PHONE)),
+                        );
+                      },
+                    )
+                  : SizedBox(),
+            ],
+          ),
+        ),
+        Divider(
+          thickness: 1,
+        ),
         ListTile(
-          title: 'Daftar Alamat',
+          dense: true,
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+          title: Text('Daftar Alamat', style: TextStyle(fontSize: 16)),
+          trailing: Icon(Icons.arrow_forward_ios, size: 24),
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                  builder: (context) => EditAccountPage(
-                        type: EditingType.ADDRESS,
-                      )),
+              MaterialPageRoute(builder: (context) => AddressesList()),
             );
           },
         ),
       ],
     );
   }
-}
 
-class PersonalSection extends StatelessWidget {
-  final CustomerModel data;
-
-  const PersonalSection({Key key, this.data}) : super(key: key);
-
-  String _acronym(String fName, String lName) {
-    var result = fName.substring(0, 1) + lName.substring(0, 1);
-    return result.toUpperCase();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    String fName = data?.firstName ?? '';
-    String lName = data?.lastName ?? '';
-    String customerId = data?.id;
-
-    List<Addresses> addresses = data?.addresses ?? [];
-
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      child: Column(
-        children: [
-          Container(
-            margin: const EdgeInsets.all(14),
-            child: CircleAvatar(
-              radius: 24,
-              backgroundColor: Colors.brown.shade800,
-              child: Text(_acronym(fName, lName)),
-            ),
-          ),
-          ListTileEdit(
-            label: 'Name',
-            content: titleCase('$fName $lName'),
-            onEditTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => AddressForm(
-                            type: FormType.EDIT_NAME,
-                            id: customerId,
-                          )));
+  void _verifyingEmailHandler() {
+    print('onVerifyTap');
+    Widget wTitle = Text('Verify Email');
+    Widget wContent = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 14),
+          child: Text('Please re-type your email'),
+        ),
+        Form(
+          key: _formKey,
+          child: TextFormField(
+            controller: _emailVerifyCtrl,
+            textInputAction: TextInputAction.done,
+            validator: (value) {
+              var regExp = RegExp(r'^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+              if (value == null || value.isEmpty) return 'Cannot be empty!';
+              if (!regExp.hasMatch(value)) return 'Email not valid!';
+              if (value?.trim() != accountData?.email?.trim())
+                return 'Email not same';
+              return null;
             },
+            decoration: InputDecoration(
+                contentPadding: const EdgeInsets.only(bottom: 0),
+                labelText: 'Your Email',
+                alignLabelWithHint: true),
           ),
-          ListTileEdit(
-              label: 'Date of Birth', content: titleCase('28 October 1995')),
-          ListTileEdit(label: 'Gender', content: titleCase('male')),
-          ListTileEdit(
-            label: 'Email',
-            content: 'araya@mailinator.com',
-            onEditTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => AddressForm(
-                            type: FormType.EDIT_EMAIL,
-                          )));
-            },
-          ),
-          ListTileEdit(
-            label: 'Phone',
-            content: phoneFormater(addresses?.first?.phone),
-            // onEditTap: () {
-            //   Navigator.push(
-            //       context,
-            //       MaterialPageRoute(
-            //           builder: (context) => AddressForm(
-            //                 type: FormType.EDIT_PHONE,
-            //               )));
-            // },
-          ),
-        ],
-      ),
+        )
+      ],
     );
-  }
-}
-
-class ListTileEdit extends StatelessWidget {
-  final String label;
-  final String content;
-  final GestureTapCallback onEditTap;
-
-  const ListTileEdit(
-      {Key key, @required this.label, this.content = '', this.onEditTap})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(4),
-      width: MediaQuery.of(context).size.width,
-      color: Colors.transparent,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 8, bottom: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Wrap(
-                  direction: Axis.vertical,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Text(label, style: TextStyle(fontSize: 14)),
-                    ),
-                    Text(content, style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-                onEditTap == null
-                    ? SizedBox()
-                    : Container(
-                        // color: Colors.amber,
-                        margin: const EdgeInsets.only(right: 8),
-                        child: GestureDetector(
-                          onTap: onEditTap,
-                          child: Text('Edit',
-                              style: TextStyle(
-                                  color: Colors.blueAccent,
-                                  fontWeight: FontWeight.bold)),
-                        ),
-                      )
-              ],
-            ),
-          ),
-          // Divider(
-          //   height: 1,
-          //   thickness: 1,
-          //   color: Colors.black,
-          // )
-        ],
-      ),
-    );
-  }
-}
-
-class ListTile extends StatelessWidget {
-  final String title;
-  final GestureTapCallback onTap;
-
-  const ListTile({Key key, @required this.title, this.onTap}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.all(4),
-        width: MediaQuery.of(context).size.width,
-        color: Colors.transparent,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 8, bottom: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(title, style: TextStyle(fontSize: 16)),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 24,
+    showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (cContext) => Platform.isIOS
+            ? CupertinoAlertDialog(
+                title: wTitle,
+                content: wContent,
+                actions: [
+                  CupertinoDialogAction(
+                    child: Text('Cancel'),
+                    onPressed: () => Navigator.of(context).pop(),
                   ),
+                  CupertinoDialogAction(
+                    child: Text('Submit'),
+                    onPressed: () {
+                      if (_formKey.currentState.validate()) {
+                        Navigator.of(context).pop();
+                        context.read<AccountProvider>().setLoading(true);
+                      }
+                    },
+                  )
                 ],
-              ),
-            ),
-            Divider(
-              height: 1,
-              thickness: 1,
-              color: Colors.black,
-            )
-          ],
-        ),
-      ),
-    );
+              )
+            : AlertDialog(
+                title: wTitle,
+                content: wContent,
+                actions: [
+                  FlatButton(
+                    child: Text("Cancel"),
+                    onPressed: () {
+                      setState(() {
+                        _emailVerifyCtrl.text = '';
+                      });
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  FlatButton(
+                    child: Text("Submit"),
+                    onPressed: () {
+                      if (_formKey.currentState.validate()) {
+                        Navigator.of(context).pop();
+                        _emailVerifyCtrl?.text = '';
+                        var payload = AccountPayload().createVerifyEmailToken(
+                            accountData?.id, accountData?.version);
+                        print('payload>>$payload');
+                        context
+                            .read<AccountProvider>()
+                            .vefiryEmailRequest(payload)
+                            .then((value) {
+                          print('>>>then1>>$value');
+                          var msg = 'Email verification ';
+                          msg += value != null ? 'Successfully' : 'Failed';
+                          _scaffoldKey.currentState
+                            ..hideCurrentSnackBar()
+                            ..showSnackBar(SnackBar(
+                                content:
+                                    Text(msg, textAlign: TextAlign.center)));
+                          setState(() {
+                            _emailVerifyCtrl.text = '';
+                          });
+                        });
+                      }
+                    },
+                  )
+                ],
+              ));
   }
-}
-
-class SafeAreaView extends StatelessWidget {
-  final Widget child;
-
-  const SafeAreaView({Key key, @required this.child}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: GestureDetector(
-        onTap: () {
-          FocusScopeNode currentFocus = FocusScope.of(context);
-          print('debug[currentFocus] ${currentFocus.hasPrimaryFocus}');
-          if (!currentFocus.hasPrimaryFocus) {
-            currentFocus.unfocus();
-          }
-        },
-        child: Container(
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
-          color: Colors.transparent,
-          child: child,
-        ),
-      ),
-    );
-  }
-}
-
-///
-/// function
-///
-String titleCase(String src) {
-  var result = '';
-  var splited = src.split(' ');
-  for (var e in splited) {
-    result += '${e[0].toUpperCase()}${e.substring(1)} ';
-  }
-
-  return result.trim();
-}
-
-String phoneFormater(String src) {
-  var result = '';
-  for (var i = 0; i < src.length; i++) {
-    result += src[i];
-    if (i == 3 || i == 7) {
-      result += '-';
-    }
-  }
-  return result.trim();
 }

@@ -30,6 +30,7 @@ dependencies:
   cupertino_icons: ^1.0.0
   http: ^0.12.2
   provider: 4.3.2+4
+  mask_text_input_formatter: ^1.2.1
 
 # List of development dependencies
 dev_dependencies:

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/page/home_page.dart';
+import 'provider/account_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'provider/provider_tes.dart';
@@ -7,6 +8,7 @@ import 'provider/provider_tes.dart';
 void main() {
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider<TesProvider>(create: (_) => TesProvider()),
+    ChangeNotifierProvider<AccountProvider>(create: (_) => AccountProvider()),
   ], child: MyApp()));
 }
 
